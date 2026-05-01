@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wumpus Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>Wumpus World Agent</h2>
+
+<input id="rows" placeholder="Rows">
+<input id="cols" placeholder="Cols">
+<button onclick="init()">Start</button>
+<button onclick="step()">Next Step</button>
+
+<h3>Percepts: <span id="percepts"></span></h3>
+<h3>Inference Steps: <span id="steps"></span></h3>
+
+<div id="grid"></div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+import random
+
+class WumpusWorld:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.grid = [["" for _ in range(cols)] for _ in range(rows)]
+        self.place_hazards()
+
+    def place_hazards(self):
+        wx, wy = random.randint(0, self.rows-1), random.randint(0, self.cols-1)
+        self.grid[wx][wy] = "W"
+
+        for _ in range((self.rows*self.cols)//5):
+            x, y = random.randint(0, self.rows-1), random.randint(0, self.cols-1)
+            if self.grid[x][y] == "":
+                self.grid[x][y] = "P"
+
+    def neighbors(self, x, y):
+        moves = [(1,0),(-1,0),(0,1),(0,-1)]
+        return [(x+dx, y+dy) for dx,dy in moves
+                if 0 <= x+dx < self.rows and 0 <= y+dy < self.cols]
+
+    def percepts(self, x, y):
+        percepts = []
+        for nx, ny in self.neighbors(x, y):
+            if self.grid[nx][ny] == "P":
+                percepts.append("Breeze")
+            if self.grid[nx][ny] == "W":
+                percepts.append("Stench")
+        return list(set(percepts))
+
+
+class Agent:
+    def __init__(self, world):
+        self.world = world
+        self.x, self.y = 0, 0
+        self.visited = set()
+        self.safe = set([(0,0)])
+        self.inference_steps = 0
+        self.last_percepts = []
+
+    def move(self):
+        self.visited.add((self.x, self.y))
+        self.last_percepts = self.world.percepts(self.x, self.y)
+
+        neighbors = self.world.neighbors(self.x, self.y)
+
+        # simple inference (expandable to full resolution)
+        if "Breeze" not in self.last_percepts and "Stench" not in self.last_percepts:
+            for n in neighbors:
+                self.safe.add(n)
+
+        for nx, ny in neighbors:
+            self.inference_steps += 1
+            if (nx, ny) in self.safe and (nx, ny) not in self.visited:
+                self.x, self.y = nx, ny
+                return True
+
+        return False
+
+    def get_visual_grid(self):
+        grid = []
+        for i in range(self.world.rows):
+            row = []
+            for j in range(self.world.cols):
+                if (i,j) == (self.x, self.y):
+                    row.append("A")
+                elif (i,j) in self.visited:
+                    row.append("SAFE")
+                elif (i,j) in self.safe:
+                    row.append("SAFE")
+                else:
+                    row.append("UNKNOWN")
+            grid.append(row)
+        return grid

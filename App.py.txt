@@ -1,0 +1,40 @@
+from flask import Flask, render_template, jsonify, request
+from logic import WumpusWorld, Agent
+
+app = Flask(__name__)
+
+world = None
+agent = None
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+@app.route("/init", methods=["POST"])
+def init():
+    global world, agent
+
+    data = request.json
+    rows = data["rows"]
+    cols = data["cols"]
+
+    world = WumpusWorld(rows, cols)
+    agent = Agent(world)
+
+    return jsonify({"message": "Initialized"})
+
+@app.route("/step")
+def step():
+    global agent
+
+    moved = agent.move()
+
+    return jsonify({
+        "grid": agent.get_visual_grid(),
+        "percepts": agent.last_percepts,
+        "steps": agent.inference_steps,
+        "moved": moved
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True)
